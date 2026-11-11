@@ -1,0 +1,14 @@
+# ============================================================================
+#  OPCIONAL · Acta con IA 100 % local (Hugging Face, sin API key)
+#  Solo hace falta si quieres redactar el acta con un modelo en tu equipo.
+#  Con Ollama o LM Studio (motores gratuitos) no necesitas nada de esto.
+#
+#  En Windows conviene el torch de CPU, que es mucho más pequeño:
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+# ============================================================================
+
+# torch: en Windows instálalo del índice de CPU (mucho más pequeño):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.0
+transformers>=4.44
+accelerate>=0.30

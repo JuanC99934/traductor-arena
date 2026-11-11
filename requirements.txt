@@ -1,0 +1,34 @@
+# ============================================================================
+#  Transcriptor de Audio y Generador de Actas · dependencias OBLIGATORIAS
+#  Todas se instalan con "wheel" precompilado en Windows, macOS y Linux:
+#  no hace falta compilador C++ ni Visual Studio.
+#
+#  Instalación recomendada en Windows:
+#     python -m venv .venv
+#     .venv\Scripts\activate
+#     pip install -r requirements.txt
+#
+#  Opcionales (instalan cosas pesadas o con más requisitos):
+#     pip install -r requirements-diarizacion.txt   (identificar hablantes)
+#     pip install -r requirements-ia.txt            (acta con IA 100 % local)
+#  El instalador instalar.bat ya hace las tres etapas por ti.
+# ============================================================================
+
+# --- Servidor web -----------------------------------------------------------
+fastapi>=0.110
+# uvicorn sin extras: evita httptools/watchfiles y sus compilaciones.
+uvicorn>=0.27
+python-multipart>=0.0.9
+# Se fija Pydantic 2 a propósito: algunas instalaciones de Windows conservan
+# Pydantic 1.10 (FastAPI lo acepta) y conviene evitar sorpresas. El código
+# funciona igual con Pydantic 1.x (modo compatibilidad).
+pydantic>=2.7
+
+# --- Transcripción (faster-whisper / CTranslate2) ---------------------------
+# Incluye ctranslate2, av, tokenizers y onnxruntime, todos con wheel.
+faster-whisper>=1.0.3
+numpy>=1.24
+scipy>=1.10
+
+# --- Exportación a Word -----------------------------------------------------
+python-docx>=1.1.0

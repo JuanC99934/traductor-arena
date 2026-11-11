@@ -1,0 +1,10 @@
+# ============================================================================
+#  Atajo: TODOS los extras opcionales de una vez.
+#     pip install -r requirements-opcional.txt
+#     pip install --no-deps resemblyzer
+#  instalar.bat hace esto mismo por etapas y tolerando fallos.
+# ============================================================================
+
+-r requirements-diarizacion.txt
+-r requirements-ia.txt
+torch>=2.0

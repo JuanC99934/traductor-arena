@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>Transcriptor de Audio y Generador de Actas</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d78ff' stroke-width='2' stroke-linecap='round'><rect x='9' y='2' width='6' height='12' rx='3'/><path d='M19 10v1a7 7 0 0 1-14 0v-1'/><path d='M12 18v4'/></svg>">
+<link rel="stylesheet" href="/static/style.css?v=__V__">
+</head>
+<body>
+
+<!-- ═════════════════ SPRITE DE ICONOS (SVG inline, sin dependencias) ═════════ -->
+<svg id="iconSprite" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+<defs>
+<symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 8v4l3 2"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v3a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-3"/><path d="M7 8l5-5 5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-headphones" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M20 15a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2z"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2"/><path d="M9 15l-3-3a12 12 0 0 1 8-9 12 12 0 0 1 4 4 12 12 0 0 1-9 8z"/><circle cx="14.5" cy="9.5" r="1.5"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+<symbol id="i-file-text" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M20 20v-1a4 4 0 0 0-3-3.9"/><path d="M16.5 4.2a3.5 3.5 0 0 1 0 6.6"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+<symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V4h12v5"/><rect x="3" y="9" width="18" height="7" rx="2"/><path d="M7 16h10v5H7z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></symbol>
+<symbol id="i-wrench" viewBox="0 0 24 24"><path d="M15.5 3.5a5.5 5.5 0 0 0-6.9 7.1L3 16.2V21h4.8l5.6-5.6a5.5 5.5 0 0 0 7.1-6.9l-3.1 3.1-3.2-.8-.8-3.2z"/></symbol>
+<symbol id="i-ruler" viewBox="0 0 24 24"><path d="M3.5 14.5l11-11 6 6-11 11z"/><path d="M8 10l2 2M11 7l2 2M14.5 14.5l2 2"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 16l-1.7-5L6 9.3l4.3-1.7z"/><path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h9l6 6v9a3 3 0 0 1-3 3z"/><path d="M8 21v-6h8v6"/><path d="M8 3v4h6"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-4"/><path d="M9 8V3M15 8V3"/><path d="M6 8h12v3a6 6 0 0 1-12 0z"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.5 5.5a5 5 0 0 0-7 .1L12 7l-1.5-1.4a5 5 0 1 0-7 7.1L12 21l8.5-8.3a5 5 0 0 0 0-7.2z"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 3.6 9A14 14 0 0 1 12 21a14 14 0 0 1-3.6-9A14 14 0 0 1 12 3z"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h9.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+<symbol id="i-recycle" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.7l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="M13 5l7 7-7 7"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v3a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-3"/><path d="M7 11l5 5 5-5"/><path d="M12 16V4"/></symbol>
+<symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 12h18"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 4.8l11 7.2-12 7.4z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><path d="M9.5 5v14M14.5 5v14"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+<symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 4L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M4 20h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7.5l-2-2.5H4a2 2 0 0 0-2 2V18a2 2 0 0 0 2 2z"/></symbol>
+</defs>
+</svg>
+
+<!-- ══════════════════════════ BARRA SUPERIOR ══════════════════════════ -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-mic"></use></svg></div>
+    <div class="brand-text">
+      <h1>Transcriptor de Audio <span>&amp; Generador de Actas</span></h1>
+      <p>Transcripción local · Diarización · Actas con IA</p>
+    </div>
+  </div>
+  <ol class="stepper" id="stepper" aria-label="Flujo de trabajo">
+    <li class="step is-active" data-step="1" title="Volver al inicio"><span class="st-dot">1</span><span class="st-name">Cargar</span></li>
+    <li class="step" data-step="2"><span class="st-dot">2</span><span class="st-name">Transcribir</span></li>
+    <li class="step" data-step="3"><span class="st-dot">3</span><span class="st-name">Revisar</span></li>
+  </ol>
+  <div class="health-chips" id="healthChips">
+    <span class="chip chip-muted" title="Estado del sistema">Cargando estado…</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btnHistory" title="Historial de reuniones">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span class="btn-label">Historial</span>
+    </button>
+    <button class="icon-btn" id="btnCompromisos" title="Acuerdos y pendientes de todas las reuniones">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"></use></svg><span class="btn-label">Compromisos</span>
+    </button>
+    <button class="icon-btn" id="themeToggle" title="Cambiar tema (claro / oscuro)">
+      <span id="themeIcon" aria-hidden="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg></span><span class="btn-label" id="themeLabel">Oscuro</span>
+    </button>
+  </div>
+</header>
+
+<!-- ══════════════════════════ LAYOUT PRINCIPAL ══════════════════════════ -->
+<main class="layout">
+
+  <!-- ───────────────────────── PANEL IZQUIERDO ───────────────────────── -->
+  <aside class="panel-left" id="panelLeft">
+   <div class="panel-scroll" id="panelScroll">
+
+    <!-- Zona de carga -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-num">1</span> Cargar reunión</h2>
+        <span class="hint">hasta 2 GB · 3 h+</span>
+      </div>
+
+      <div class="dropzone" id="dropZone" tabindex="0" role="button"
+           aria-label="Arrastra un archivo de audio o video, o haz clic para seleccionarlo">
+        <div class="drop-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-upload"></use></svg></div>
+        <p class="drop-title">Arrastra tu audio o video aquí</p>
+        <p class="drop-sub">MP3 · WAV · M4A · MP4 · MKV · WEBM · FLAC · OGG</p>
+        <button class="btn btn-ghost btn-sm" id="btnPickFile" type="button">Seleccionar archivo</button>
+        <input type="file" id="fileInput" hidden
+               accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac,.wma,.mp4,.mkv,.mov,.webm,.avi">
+      </div>
+
+      <div class="upload-wrap" id="uploadProgressWrap" hidden>
+        <div class="upload-line">
+          <span id="uploadName" class="ellipsis">archivo</span>
+          <span id="uploadPct" class="mono">0 %</span>
+        </div>
+        <div class="progress thin"><div class="progress-fill" id="uploadBar" style="width:0%"></div></div>
+        <div class="upload-line small">
+          <span id="uploadInfo">Subiendo…</span>
+          <button class="link-btn" id="btnAbortUpload" type="button">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="file-card" id="selectedFile" hidden>
+        <div class="file-emoji"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-headphones"></use></svg></div>
+        <div class="file-meta">
+          <strong id="fileName" class="ellipsis">archivo.mp3</strong>
+          <span id="fileDetails" class="small muted">—</span>
+        </div>
+        <button class="icon-only" id="btnClearFile" title="Quitar archivo" type="button"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg></button>
+      </div>
+
+      <button class="btn btn-record" id="btnRecord" type="button">
+        <span class="rec-dot"></span> Grabar reunión en vivo
+      </button>
+    </section>
+
+    <!-- Configuración -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-num">2</span> Ajustes de transcripción</h2>
+      </div>
+
+      <label class="field">
+        <span class="field-label">Modo de precisión / velocidad</span>
+        <select id="modeSelect" class="input"></select>
+        <span class="field-help" id="modeDesc">—</span>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Idioma del audio</span>
+        <select id="languageSelect" class="input"></select>
+        <span class="field-help">Nunca se traduce: se transcribe en el idioma original.</span>
+      </label>
+
+      <div class="switch-row">
+        <label class="switch">
+          <input type="checkbox" id="optTimestamps" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span>Mostrar marcas de tiempo</span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="optParagraphs">
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span>Modo lectura en párrafos</span>
+        </label>
+      </div>
+
+      <details class="accordion">
+        <summary><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-settings"></use></svg> Opciones avanzadas</summary>
+        <div class="accordion-body">
+          <label class="field">
+            <span class="field-label">Hotwords (términos que deben reconocerse)</span>
+            <input class="input" id="optHotwords" type="text"
+                   placeholder="EBITDA, descorche, Beneficencia, coaseguro…">
+          </label>
+          <label class="field">
+            <span class="field-label">Contexto adicional para el modelo</span>
+            <textarea class="input" id="optContext" rows="3"
+                      placeholder="Ej.: Junta de consejo del Hospital Beneficencia Española, revisión de presupuesto 2026, aseguradoras."></textarea>
+          </label>
+          <label class="field">
+            <span class="field-label">Filtro FFMpeg extra (se encadena al filtro base)</span>
+            <input class="input" id="optFfmpeg" type="text"
+                   placeholder="Ej.: afftdn=nf=-25, o highpass=f=120">
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="optChain" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span>Encadenar texto entre fragmentos (mejor contexto)</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="optMusic">
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span>Modo música (sin VAD)</span>
+          </label>
+          <p class="field-help">
+            El VAD se activa por defecto (umbral 0.35 · silencio 500 ms · padding 200 ms) y la
+            inferencia por lotes entra sola en audios de más de 2 minutos.
+          </p>
+        </div>
+      </details>
+
+    </section>
+
+    <!-- Estado del procesamiento -->
+    <section class="card" id="jobPanel" hidden>
+      <div class="card-head">
+        <h2>Procesando</h2>
+        <span class="badge" id="jobStatus">en cola</span>
+      </div>
+
+      <div class="equalizer" id="equalizer" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressWrap"><div class="progress-fill shimmer" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-meta">
+        <span id="jobMessage" class="small muted ellipsis" role="status" aria-live="polite">Preparando…</span>
+        <span id="progressPct" class="mono">0 %</span>
+      </div>
+
+      <div class="queue-info small muted" id="queueInfo"></div>
+
+      <div class="job-actions">
+        <button class="btn btn-danger-ghost btn-sm" id="btnCancelJob" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg> Cancelar trabajo</button>
+        <button class="link-btn" id="btnToggleLog" type="button">Ver registro</button>
+      </div>
+      <div class="live-transcript" id="liveTranscript" hidden>
+          <div class="live-head">
+            <span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-zap"></use></svg> Avance en vivo</span>
+            <span class="small muted" id="liveCount">0 fragmentos</span>
+          </div>
+          <div class="live-body" id="liveBody"></div>
+        </div>
+
+      <pre class="job-log" id="jobLog" hidden></pre>
+    </section>
+   </div><!-- /panel-scroll -->
+
+   <!-- CTA fija al pie del panel: nunca tapa los ajustes -->
+   <div class="panel-cta">
+     <button class="btn btn-primary btn-block" id="btnStart" disabled>
+       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-rocket"></use></svg> Iniciar transcripción
+     </button>
+     <button class="btn btn-danger-ghost btn-block btn-sm" id="btnCancelAll" hidden>
+       Cancelar todos los trabajos de esta sesión
+     </button>
+   </div>
+  </aside>
+
+  <!-- ───────────────────────── PANEL DERECHO ───────────────────────── -->
+  <section class="panel-right" id="panelRight">
+
+    <!-- Estado vacío -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-art"><svg class="icon icon-xl" aria-hidden="true" focusable="false"><use href="#i-file-text"></use></svg></div>
+      <h2>Tu reunión, transcrita y en acta</h2>
+      <p>
+        Sube un audio o graba en vivo. La transcripción es <strong>100 % local</strong> con
+        faster-whisper, se identifican los hablantes y la IA redacta el acta ejecutiva.
+      </p>
+      <div class="empty-grid">
+        <div><span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-lock"></use></svg></span><b>Privado</b><small>El audio no sale de tu equipo (salvo que elijas Gemini).</small></div>
+        <div><span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-zap"></use></svg></span><b>Hasta 3 h</b><small>Optimizado en CPU int8 y por lotes.</small></div>
+        <div><span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"></use></svg></span><b>Hablantes</b><small>Huellas de voz persistentes entre reuniones.</small></div>
+        <div><span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-file-text"></use></svg></span><b>Word / SRT</b><small>Exporta acta y subtítulos en un clic.</small></div>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="results" hidden>
+
+      <div class="result-header">
+        <div>
+          <h2 id="resultTitle">Reunión</h2>
+          <p class="muted small" id="resultMeta">—</p>
+        </div>
+        <div class="result-header-actions">
+          <button class="btn btn-ghost btn-sm" id="btnNuevaReunion" title="Volver al inicio para transcribir otra reunión (esta queda guardada en el historial)">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg> Nueva reunión
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btnContinuar" title="Añadir otro audio a esta misma reunión (por ejemplo, después de un receso) y redactar un solo acta">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg> Continuar reunión
+          </button>
+          <input type="file" id="continuarFile" accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.opus,.flac,.aac,.mp4,.mkv,.webm,.mov" hidden>
+          <button class="btn btn-ghost btn-sm" id="btnCopy"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"></use></svg> Copiar texto</button>
+          <button class="btn btn-ghost btn-sm" id="btnPrint"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-printer"></use></svg> Imprimir</button>
+        </div>
+      </div>
+
+      <div class="note-banner" id="duplicadoNote" hidden></div>
+      <div class="note-banner" id="partesNote" hidden></div>
+
+      <div class="warnings" id="warningsBox" hidden></div>
+
+      <!-- Estadísticas -->
+      <section class="card stats-card">
+        <div class="result-hero">
+          <div class="result-hero-duration">
+            <span class="rh-label">Duración</span>
+            <strong class="rh-value" id="statDuration">00:00</strong>
+          </div>
+          <div class="result-hero-line">
+            <span><b class="rh-strong" id="statSpeed">—×</b> de velocidad</span>
+            <span class="rh-dot">·</span>
+            <span><b class="rh-strong" id="statWords">0</b> palabras</span>
+            <span class="rh-dot">·</span>
+            <span><b class="rh-strong" id="statSpeakers">0</b> hablantes</span>
+            <span class="rh-dot">·</span>
+            <span><b class="rh-strong" id="statFragments">0</b> fragmentos</span>
+            <span class="rh-dot">·</span>
+            <span class="rh-quiet">procesado en <b id="statTime">00:00</b></span>
+            <button type="button" class="chip-link" id="btnLowChip"
+                    title="Mostrar solo los fragmentos marcados como dudosos">
+              <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
+              <span id="statLowConf">0</span> dudosos
+            </button>
+          </div>
+        </div>
+
+        <div class="phase-bars">
+          <div class="phase-row">
+            <span class="phase-name">Limpieza de audio</span>
+            <div class="phase-track"><div class="phase-fill cleanup" id="phaseCleanupBar"></div></div>
+            <span class="phase-time mono" id="phaseCleanupTime">0 s</span>
+          </div>
+          <div class="phase-row">
+            <span class="phase-name">Transcripción</span>
+            <div class="phase-track"><div class="phase-fill transcribe" id="phaseTranscribeBar"></div></div>
+            <span class="phase-time mono" id="phaseTranscribeTime">0 s</span>
+          </div>
+          <div class="phase-row">
+            <span class="phase-name">Diarización</span>
+            <div class="phase-track"><div class="phase-fill diarize" id="phaseDiarizeBar"></div></div>
+            <span class="phase-time mono" id="phaseDiarizeTime">0 s</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Diarización -->
+      <section class="card" id="diarCard">
+        <div class="card-head">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"></use></svg> Identificación de hablantes</h2>
+          <span class="hint" id="diarHint">Edita el nombre y aplícalo a toda la transcripción</span>
+        </div>
+        <div class="speaker-list" id="speakerList"></div>
+        <datalist id="knownVoices"></datalist>
+        <div class="diar-actions">
+          <button class="btn btn-primary btn-sm" id="btnApplyNames"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg> Aplicar nombres a la transcripción</button>
+          <span class="field-help">Las voces guardadas se reconocen automáticamente en futuras reuniones.</span>
+        </div>
+
+        <details class="diar-tools">
+          <summary><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wrench"></use></svg> Corregir la diarización</summary>
+          <div class="diar-tools-body">
+            <div class="field compact">
+              <span class="field-label">Fusionar dos voces que son la misma persona</span>
+              <div class="inline-row">
+                <select class="input" id="mergeFrom" aria-label="Voz de origen"></select>
+                <span class="arrow">→</span>
+                <select class="input" id="mergeInto" aria-label="Voz de destino"></select>
+                <button class="btn btn-ghost btn-sm" id="btnMergeSpeakers" type="button">Fusionar</button>
+              </div>
+            </div>
+            <div class="field compact">
+              <span class="field-label">Separar fragmentos en una voz nueva</span>
+              <div class="inline-row">
+                <button class="btn btn-ghost btn-sm" id="btnSelectSegments" type="button">Seleccionar fragmentos</button>
+                <span class="small muted" id="selectInfo">0 seleccionados</span>
+                <input class="input" id="splitName" type="text" placeholder="Nombre de la voz nueva (opcional)">
+                <button class="btn btn-ghost btn-sm" id="btnSplitSpeaker" type="button">Separar</button>
+              </div>
+            </div>
+            <div class="field compact">
+              <span class="field-label">Reconocimiento de voces guardadas</span>
+              <div class="inline-row">
+                <button class="btn btn-ghost btn-sm" id="btnCalibrate" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-ruler"></use></svg> Calibrar umbral</button>
+                <span class="small muted" id="calibrateInfo">Ajusta el umbral con las voces ya guardadas.</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Acta / resumen -->
+      <section class="card" id="summaryCard">
+        <div class="card-head">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-file-text"></use></svg> Minuta, Acta y Resumen Inteligente</h2>
+          <span class="hint" id="iaHint">—</span>
+        </div>
+
+        <div class="summary-controls">
+          <label class="field compact">
+            <span class="field-label">Documento</span>
+            <select class="input" id="formatSelect">
+              <option value="acta_completa">Acta Ejecutiva Completa</option>
+              <option value="resumen_directo">Resumen Ejecutivo Directo</option>
+              <option value="acuerdos">Lista de Acuerdos y Pendientes</option>
+            </select>
+          </label>
+
+          <label class="field compact">
+            <span class="field-label">Motor de IA <span class="free-badge">sin costo</span></span>
+            <select class="input" id="engineSelect">
+              <option value="local">IA local · Hugging Face (gratis, sin internet)</option>
+              <option value="openai">IA local · Ollama / LM Studio (gratis, mejor calidad)</option>
+              <option value="gemini">Google Gemini 2.5 Flash (API con capa gratuita)</option>
+            </select>
+            <span class="field-help" id="engineHelp">Motores gratuitos: no requieren pagos ni cuenta.</span>
+          </label>
+
+          <label class="field compact" id="localModelField">
+            <span class="field-label">Modelo libre (Apache-2.0)</span>
+            <select class="input" id="localModelSelect"></select>
+          </label>
+
+          <div class="field compact" id="openaiFields" hidden>
+            <span class="field-label">Servidor local (Ollama / LM Studio)</span>
+            <input class="input" id="openaiBaseUrl" type="text"
+                   placeholder="http://127.0.0.1:11434/v1" autocomplete="off">
+            <input class="input" id="openaiModel" type="text" list="openaiModels"
+                   placeholder="qwen2.5:7b-instruct" autocomplete="off" style="margin-top:6px">
+            <datalist id="openaiModels"></datalist>
+            <span class="field-help" id="openaiHelp">Instala Ollama (gratis) y ejecuta <code>ollama pull qwen2.5:7b-instruct</code>.</span>
+          </div>
+
+          <label class="field compact" id="geminiKeyField" hidden>
+            <span class="field-label">API Key de Gemini (opcional)</span>
+            <input class="input" id="geminiKey" type="password" placeholder="AIza…" autocomplete="off">
+            <span class="field-help">Solo si decides usar la nube. Los motores locales no necesitan clave.</span>
+          </label>
+        </div>
+
+        <p class="ia-warn" id="iaAviso" hidden></p>
+
+        <div class="summary-buttons">
+          <button class="btn btn-primary" id="btnSummarize"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"></use></svg> Redactar con IA</button>
+          <button class="btn btn-ghost btn-sm" id="btnStopSummarize" type="button" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-stop"></use></svg> Detener</button>
+          <button class="btn btn-ghost btn-sm" id="btnSaveKey" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-save"></use></svg> Guardar configuración</button>
+          <button class="btn btn-ghost btn-sm" id="btnTestEngine" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plug"></use></svg> Probar conexión</button>
+          <span class="small muted" id="summaryStatus" aria-live="polite"></span>
+        </div>
+
+        <p class="free-note" id="freeNote">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-heart"></use></svg> <strong>100 % gratis por defecto:</strong> la IA local corre en tu equipo, sin API Key,
+          sin cuota y sin enviar la reunión a internet. Solo se descarga una vez el modelo libre.
+        </p>
+
+        <details class="acta-ctx">
+          <summary><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-target"></use></svg> Contexto para mejorar el acta (opcional)</summary>
+          <div class="acta-ctx-body">
+            <label class="field compact">
+              <span class="field-label">Participantes conocidos</span>
+              <input class="input" id="iaParticipants" type="text"
+                     placeholder="Ana López (Finanzas), Luis Pérez (TI), Marta Ruiz">
+            </label>
+            <label class="field compact">
+              <span class="field-label">Glosario / siglas de la organización</span>
+              <input class="input" id="iaGlossary" type="text"
+                     placeholder="POA = Plan Operativo Anual, CxP = Cuentas por Pagar">
+            </label>
+            <label class="field compact">
+              <span class="field-label">Acta anterior (seguimiento de acuerdos)</span>
+              <select class="input" id="iaActaPrevia">
+                <option value="">Automático: última reunión de la misma serie</option>
+                <option value="ninguna">Sin acta anterior</option>
+              </select>
+            </label>
+            <p class="field-help">Se envían al modelo para que respete nombres y términos
+              exactos, y para verificar que las cifras existan en la transcripción.
+              Del acta anterior solo se usan sus acuerdos y pendientes, para dar seguimiento
+              y detectar compromisos repetidos o incumplidos.</p>
+          </div>
+        </details>
+
+        <details class="acta-ctx" id="plantillaTool">
+          <summary><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"></use></svg> Plantilla del acta (organización y firmas)</summary>
+          <div class="acta-ctx-body">
+            <p class="field-help">
+              Estos datos encabezan y firman <strong>todas</strong> las actas: se usan en el
+              encabezado, en el quórum y en el pie de firmas. Se guardan en tu equipo.
+            </p>
+            <div class="summary-controls">
+              <label class="field compact">
+                <span class="field-label">Organización</span>
+                <input class="input" id="plOrganizacion" type="text" placeholder="Hospital General San Rafael">
+              </label>
+              <label class="field compact">
+                <span class="field-label">Órgano que sesiona</span>
+                <input class="input" id="plOrgano" type="text" placeholder="Junta Directiva">
+              </label>
+              <label class="field compact">
+                <span class="field-label">Ciudad</span>
+                <input class="input" id="plCiudad" type="text" placeholder="Ciudad de México">
+              </label>
+              <label class="field compact">
+                <span class="field-label">Quien preside</span>
+                <input class="input" id="plPresidencia" type="text" placeholder="Lic. Ana Pérez">
+              </label>
+              <label class="field compact">
+                <span class="field-label">Cargo de presidencia</span>
+                <input class="input" id="plPresidenciaCargo" type="text" placeholder="Presidente del Consejo">
+              </label>
+              <label class="field compact">
+                <span class="field-label">Secretaría técnica</span>
+                <input class="input" id="plSecretaria" type="text" placeholder="Ing. Luis Ruiz">
+              </label>
+              <label class="field compact">
+                <span class="field-label">Cargo de secretaría</span>
+                <input class="input" id="plSecretariaCargo" type="text" placeholder="Secretario Técnico">
+              </label>
+            </div>
+            <div class="summary-buttons">
+              <button class="btn btn-ghost btn-sm" id="btnSavePlantilla" type="button">
+                <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-save"></use></svg> Guardar plantilla
+              </button>
+              <span class="small muted" id="plantillaStatus"></span>
+            </div>
+          </div>
+        </details>
+
+        <details class="acta-ctx" id="audioTool">
+          <summary><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-headphones"></use></svg> Escuchar el audio con un modelo de audio (opcional)</summary>
+          <div class="acta-ctx-body">
+            <p class="field-help">
+              Un modelo de audio local en Ollama (por ejemplo <code>lfm3-audio</code>, 2 GB) escucha
+              un trozo de la grabación y te dice <strong>en qué idioma está, cuántas personas hablan y de qué
+              trata</strong> antes de transcribir 3 horas. No sustituye a la transcripción: no da marcas de
+              tiempo ni transcribe reuniones largas.
+            </p>
+            <p class="field-help" id="audioToolState">Comprobando Ollama…</p>
+            <div class="summary-controls">
+              <label class="field compact">
+                <span class="field-label">Modelo de audio</span>
+                <select class="input" id="audioModelSelect"></select>
+              </label>
+              <label class="field compact">
+                <span class="field-label">Trozo a escuchar</span>
+                <select class="input" id="audioSeconds">
+                  <option value="20">20 segundos</option>
+                  <option value="30" selected>30 segundos</option>
+                  <option value="60">1 minuto</option>
+                  <option value="120">2 minutos</option>
+                </select>
+              </label>
+              <label class="field compact">
+                <span class="field-label">Pregunta (opcional)</span>
+                <input class="input" id="audioQuestion" type="text" autocomplete="off"
+                       placeholder="¿De qué se habla y cuántas personas intervienen?">
+              </label>
+            </div>
+            <div class="summary-buttons">
+              <button class="btn btn-ghost btn-sm" id="btnAudioListen" type="button">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"></use></svg> Escuchar
+              </button>
+              <span class="small muted" id="audioStatus" aria-live="polite"></span>
+            </div>
+            <textarea id="audioResult" class="input summary-text" rows="5" readonly
+                      placeholder="Aquí aparecerá lo que el modelo escuchó…"></textarea>
+          </div>
+        </details>
+
+        <div class="ia-progress" id="iaProgress" hidden>
+          <div class="progress thin"><div class="progress-fill shimmer" id="iaProgressBar" style="width:0%"></div></div>
+          <span class="small muted" id="iaProgressText"></span>
+        </div>
+
+        <div class="acta-view-bar" id="actaViewBar" hidden>
+          <div class="acta-view-tabs" role="tablist" aria-label="Vista del acta">
+            <button class="acta-tab is-active" id="btnActaFormatted" role="tab" aria-selected="true">Vista formateada</button>
+            <button class="acta-tab" id="btnActaRaw" role="tab" aria-selected="false">Editar texto</button>
+          </div>
+          <span class="small muted" id="actaViewHint">Así se verá al imprimir o exportar.</span>
+          <div class="acta-view-actions">
+            <label class="inline-field" title="Versiones generadas de esta acta">
+              <span class="sr-only">Versión</span>
+              <select class="input input-sm" id="actaVersionSelect"></select>
+            </label>
+            <button class="link-btn" id="btnActaRestaurar" type="button">Restaurar</button>
+            <button class="btn btn-ghost btn-sm" id="btnActaGuardar" type="button" title="Guardar el acta tal como la has editado">
+              <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-check-circle"></use></svg> Guardar
+            </button>
+            <button class="btn btn-ghost btn-sm" id="btnActaDocx" type="button" title="Descargar solo el acta en Word">
+              <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-file-text"></use></svg> Acta .docx
+            </button>
+          </div>
+        </div>
+
+        <div class="acta-preview" id="actaPreview" hidden aria-live="polite"></div>
+
+        <textarea id="summaryText" class="input summary-text" rows="14"
+                  placeholder="Aquí aparecerá el acta ejecutiva, el resumen o la lista de acuerdos. Puedes editarla libremente antes de exportar…"></textarea>
+
+        <div class="acta-empty" id="actaEmpty">
+          <p class="ae-title">Aún no hay acta. Elige un formato y pulsa «Redactar con IA».</p>
+          <div class="ae-grid">
+            <button type="button" class="ae-card" data-format="acta_completa">
+              <b>Acta ejecutiva</b>
+              <small>Contexto, acuerdos con responsable y fecha, pendientes y siguientes pasos.</small>
+            </button>
+            <button type="button" class="ae-card" data-format="resumen_directo">
+              <b>Resumen directo</b>
+              <small>Tres o cuatro párrafos con lo esencial para quien no asistió.</small>
+            </button>
+            <button type="button" class="ae-card" data-format="acuerdos">
+              <b>Acuerdos y pendientes</b>
+              <small>Lista accionable con marcas de tiempo para cada compromiso.</small>
+            </button>
+          </div>
+        </div>
+
+        <div class="summary-tools">
+          <button class="btn btn-ghost btn-sm" id="btnClassify"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg> Clasificar acuerdos / pendientes</button>
+          <span class="small muted" id="summaryCount">0 caracteres</span>
+        </div>
+
+        <div class="acuerdos-table-wrap" id="acuerdosWrap" hidden>
+          <div class="acuerdos-head">
+            <h3><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"></use></svg> Acuerdos estructurados</h3>
+            <div class="inline-row">
+              <button class="link-btn" id="btnCopyAcuerdos" type="button">Copiar tabla</button>
+              <span class="small muted" id="figuresInfo"></span>
+            </div>
+          </div>
+          <table class="acuerdos-table">
+            <thead>
+              <tr><th>Acuerdo</th><th>Responsable</th><th>Fecha</th><th>Estatus</th><th>Minuto</th></tr>
+            </thead>
+            <tbody id="acuerdosBody"></tbody>
+          </table>
+          <p class="small muted" id="acuerdosHint" hidden>
+            Puedes corregir responsable, fecha y estatus: se guarda al salir del campo.
+          </p>
+        </div>
+
+        <div class="figures-panel" id="figuresPanel" hidden>
+          <div class="figures-head">
+            <strong><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
+              Cifras por revisar</strong>
+            <span class="small muted">Estas cifras del acta no aparecen en la transcripción. Pulsa el minuto para comprobarlas.</span>
+          </div>
+          <ul class="figures-list" id="figuresList"></ul>
+        </div>
+
+        <div class="three-cols" id="classifyGrid">
+          <div class="mini-col">
+            <h3><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"></use></svg> Acuerdos</h3>
+            <ul id="colAcuerdos"><li class="placeholder">Sin elementos</li></ul>
+          </div>
+          <div class="mini-col">
+            <h3><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"></use></svg> Pendientes</h3>
+            <ul id="colPendientes"><li class="placeholder">Sin elementos</li></ul>
+          </div>
+          <div class="mini-col">
+            <h3><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg> Siguientes pasos</h3>
+            <ul id="colSiguientes"><li class="placeholder">Sin elementos</li></ul>
+          </div>
+        </div>
+
+        <p class="field-help" id="editsNote" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"></use></svg> Se exportará la transcripción con tus
+          correcciones y los nombres de hablante actuales.</p>
+        <div class="export-row">
+          <button class="btn btn-outline" data-export="docx"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg> Word (.docx)</button>
+          <button class="btn btn-outline" data-export="txt"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-file-text"></use></svg> Texto (.txt)</button>
+          <button class="btn btn-outline" data-export="srt"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-film"></use></svg> Subtítulos (.srt)</button>
+          <button class="btn btn-outline" data-export="vtt"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg> Subtítulos (.vtt)</button>
+        </div>
+      </section>
+
+      <!-- Transcripción -->
+      <section class="card transcript-card">
+        <div class="card-head">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-file-text"></use></svg> Transcripción</h2>
+          <div class="card-head-tools">
+            <span class="hint" id="transcriptStats">—</span>
+            <div class="menu-wrap" id="tocWrap">
+              <button class="btn btn-ghost btn-sm" id="btnToc" aria-haspopup="true" aria-expanded="false"
+                      title="Índice de la reunión: salta a cada bloque">
+                <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-list"></use></svg> Índice
+                <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"></use></svg>
+              </button>
+              <div class="toc-panel" id="tocPanel" hidden>
+                <div class="toc-head">Índice de la reunión</div>
+                <div class="chapter-bar" id="chapterBar" aria-label="Capítulos de la reunión"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="transcript-toolbar">
+          <div class="search-box">
+            <span class="search-icon"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg></span>
+            <input class="input search-input" id="searchInput" type="search"
+                   placeholder="Buscar en la transcripción…  ( / o Ctrl+K )">
+            <span class="search-count mono" id="searchCount"></span>
+            <button class="icon-only" id="btnPrevMatch" title="Coincidencia anterior (Shift+Enter)"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-chevron-up"></use></svg></button>
+            <button class="icon-only" id="btnNextMatch" title="Coincidencia siguiente (Enter)"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"></use></svg></button>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnJumpLow" title="Saltar al siguiente fragmento con baja confianza">
+            <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg> Dudoso
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btnGlobalSearch" title="Buscar en todas las reuniones"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg> Todas</button>
+          <button class="btn btn-ghost btn-sm" id="btnUndo" title="Deshacer el último cambio (Ctrl+Z)" disabled><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"></use></svg> Deshacer</button>
+          <button class="btn btn-ghost btn-sm" id="btnRestore" title="Volver a la transcripción original de Whisper"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-recycle"></use></svg> Original</button>
+          <button class="btn btn-ghost btn-sm" id="btnEdit"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pencil"></use></svg> Editar texto</button>
+        </div>
+
+        <div class="global-results" id="globalResults" hidden></div>
+
+        <div class="edit-banner" id="editBanner" hidden>
+          <span>Modo edición activo: corrige cualquier palabra directamente y se guardará antes de exportar.</span>
+          <button class="link-btn" id="btnEditDone">Terminar edición</button>
+        </div>
+
+        <div class="transcript" id="segmentList"></div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<!-- ══════════════════════════ REPRODUCTOR PEGAJOSO ══════════════════════════ -->
+<div class="player-bar" id="playerBar" hidden>
+  <button class="icon-only play-btn" id="btnPlayPause" title="Reproducir / Pausar (Espacio)" aria-label="Reproducir"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-play"></use></svg></button>
+  <button class="icon-only skip-btn" id="btnBack5" title="Retroceder 5 s (←)" aria-label="Retroceder 5 segundos">&minus;5</button>
+  <button class="icon-only skip-btn" id="btnFwd5" title="Avanzar 5 s (→)" aria-label="Avanzar 5 segundos">+5</button>
+
+  <div class="player-time mono tabular">
+    <span id="playerCurrent">00:00</span><span class="pt-sep">/</span><span id="playerDuration" class="pt-total">00:00</span>
+  </div>
+
+  <div class="player-track wave-wrap" id="waveWrap" title="Forma de onda: haz clic para saltar a ese punto">
+    <canvas id="waveCanvas" height="42" aria-hidden="true"></canvas>
+    <div class="wave-progress" id="waveProgress" aria-hidden="true"></div>
+    <div class="wave-cursor" id="waveCursor" hidden></div>
+    <input type="range" id="seekBar" class="seek" min="0" max="100" value="0" step="0.1"
+           aria-label="Posición del audio">
+  </div>
+
+  <span class="now-playing" id="nowPlaying" title="Fragmento en reproducción">—</span>
+
+  <div class="speed-group" id="speedGroup">
+    <button class="speed-btn is-active" data-speed="1" title="Velocidad normal">1x</button>
+    <button class="speed-btn" data-speed="1.25" title="Velocidad 1.25x">1.25x</button>
+    <button class="speed-btn" data-speed="1.5" title="Velocidad 1.5x">1.5x</button>
+    <button class="speed-btn" data-speed="2" title="Velocidad 2x">2x</button>
+    <label class="follow-toggle" title="Desplazar la transcripción siguiendo el audio">
+      <input type="checkbox" id="chkFollow" checked> Seguir
+    </label>
+  </div>
+  <audio id="audio" preload="metadata"></audio>
+</div>
+
+<!-- ══════════════════════════ MODAL GRABADORA ══════════════════════════ -->
+<div class="modal" id="recorderModal" hidden role="dialog" aria-modal="true" aria-labelledby="recTitle" tabindex="-1">
+  <div class="modal-card recorder">
+    <div class="modal-head">
+      <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mic"></use></svg> Grabar reunión en vivo</h2>
+      <button class="icon-only" id="btnRecClose" title="Cerrar"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg></button>
+    </div>
+
+    <label class="field">
+      <span class="field-label">Micrófono</span>
+      <select class="input" id="micSelect"></select>
+    </label>
+
+    <div class="rec-timer mono" id="recTimer">00:00:00</div>
+    <div class="rec-status small muted" id="recStatus">Pulsa «Iniciar grabación» para comenzar.</div>
+
+    <canvas id="recCanvas" class="rec-canvas" width="720" height="140"></canvas>
+
+    <div class="vu-meter" id="vuBars" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="rec-actions">
+      <button class="btn btn-record" id="btnRecStart">● Iniciar grabación</button>
+      <button class="btn btn-ghost" id="btnRecPause" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pause"></use></svg> Pausar</button>
+      <button class="btn btn-primary" id="btnRecStop" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-stop"></use></svg> Detener y usar audio</button>
+    </div>
+    <p class="field-help">
+      Se graba el micrófono seleccionado con supresión de eco y ganancia automática.
+      No cierres la pestaña: el audio se pierde si recargas la página.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════ HISTORIAL ══════════════════════════ -->
+<div class="drawer" id="historyDrawer" hidden role="dialog" aria-modal="true" aria-labelledby="histTitle" tabindex="-1">
+  <div class="drawer-head">
+    <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg> Historial de reuniones</h2>
+    <button class="icon-only" id="btnCloseHistory" title="Cerrar"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg></button>
+  </div>
+  <div class="drawer-tools">
+    <input class="input input-sm" id="historySearch" type="search" autocomplete="off"
+           placeholder="Buscar por título, serie o texto del acta…" aria-label="Buscar en el historial">
+    <div class="drawer-filters">
+      <select class="input input-sm" id="historyFilter" aria-label="Filtrar historial">
+        <option value="all">Todas</option>
+        <option value="acta">Con acta</option>
+        <option value="pendientes">Con pendientes</option>
+        <option value="sin_acta">Sin acta</option>
+        <option value="protegidas">Protegidas</option>
+      </select>
+      <select class="input input-sm" id="historySort" aria-label="Ordenar historial">
+        <option value="recientes">Más recientes</option>
+        <option value="antiguas">Más antiguas</option>
+        <option value="largas">Más largas</option>
+        <option value="titulo">Por título</option>
+      </select>
+    </div>
+  </div>
+  <div class="drawer-note" id="historyRetention" hidden></div>
+  <div class="drawer-body" id="historyList">
+    <p class="muted small">Cargando…</p>
+  </div>
+  <div class="drawer-foot small muted" id="historyFoot"></div>
+</div>
+
+<div class="drawer" id="compromisosDrawer" hidden role="dialog" aria-modal="true" aria-labelledby="compTitle" tabindex="-1">
+  <div class="drawer-head">
+    <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"></use></svg> Compromisos de todas las reuniones</h2>
+    <button class="icon-only" id="btnCloseCompromisos" title="Cerrar"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg></button>
+  </div>
+  <div class="drawer-tools">
+    <input class="input input-sm" id="compromisosSearch" type="search" autocomplete="off"
+           placeholder="Buscar acuerdo, responsable o reunión…" aria-label="Buscar compromisos">
+    <div class="drawer-filters">
+      <select class="input input-sm" id="compromisosFilter" aria-label="Filtrar compromisos">
+        <option value="pendientes">Pendientes</option>
+        <option value="todos">Todos</option>
+        <option value="hechos">Cumplidos</option>
+        <option value="vencidos">Sin fecha vencida</option>
+      </select>
+    </div>
+  </div>
+  <div class="drawer-body" id="compromisosList">
+    <p class="muted small">Cargando…</p>
+  </div>
+  <div class="drawer-foot small muted" id="compromisosFoot"></div>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+
+<!-- ══════════════════════════ TOASTS ══════════════════════════ -->
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div id="srAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<script src="/static/app.js?v=__V__"></script>
+</body>
+</html>

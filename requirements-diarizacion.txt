@@ -1,0 +1,21 @@
+# ============================================================================
+#  OPCIONAL · Diarización (identificar quién habla)
+#
+#  IMPORTANTE: aquí NO se pone "webrtcvad" sino "webrtcvad-wheels".
+#  El paquete original webrtcvad solo se distribuye como código fuente y
+#  necesita Visual C++ Build Tools en Windows (error típico:
+#  "Microsoft Visual C++ 14.0 or greater is required" al compilar _webrtcvad).
+#  webrtcvad-wheels trae el mismo módulo ya compilado para Python 3.10-3.15.
+#
+#  Después de esta etapa hay que instalar resemblyzer SIN dependencias, para
+#  que pip no vuelva a intentar compilar webrtcvad:
+#     pip install --no-deps resemblyzer
+#  (instalar.bat lo hace solo en el paso 4)
+#
+#  Para usar el torch más ligero (CPU) en Windows:
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+# ============================================================================
+
+webrtcvad-wheels>=2.0.14
+librosa>=0.10
+setuptools<81

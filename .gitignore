@@ -1,0 +1,45 @@
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Modelos de IA (muy pesados, se descargan aparte)
+modelos/
+
+# Datos de usuario (subidos, historiales, sesiones)
+uploads/
+historial/
+tmp/
+logs/
+backups/
+capturas/
+resultados/
+voces/
+
+# Archivos de datos/estado personales
+historial.json
+historial.json.bak
+sesiones.json
+sesiones.json.bak
+ia_config.json
+ia_config.json.bak
+.sudo_as_admin_successful
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Ejecutables compilados
+dist/
+build/
+*.exe
+
+# Editores y sistema
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
